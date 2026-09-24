@@ -1,6 +1,9 @@
 # fall-cloud
 BYU-I ITM 101 Project
 
+Our web app plan is to create a consolidated area for small business to plan, share files, collaborate, and stay on the same page with specific pipelines and progressions. Often small businesses struggle because they don't have a centralized location for keeping track of plans and tasks. This app will help address that issue. 
+The main page has a dashboard and whiteboard area where an overview can be shown as well as a location for miscellaneous thoughts and ideas. The business using it will be able to customize a specific progression pipeline for their needs. Some features include:
+
 ~ A shared calendar for employees and employers to use to organize specific events/tasks throughout the day and week.
 
 ~ A pipeline map with a progression bar. For greater tasks or projects, this can be used for the different members of the business to keep track of what has been done and what has not. This is especially helpful for businesses that need things do be done in a specific order, and where communication might be lacking. Having this centralized progression map will help people stay on the same page.
