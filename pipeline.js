@@ -1,441 +1,769 @@
-#!/usr/bin/env node
+/* Browser version of the pipeline feature. No Node.js APIs are used here. */
+(function () {
+  'use strict';
 
-// Load Node.js's built-in file-system module.
-const fs = require('node:fs');
-
-// Load Node.js's path module for safely creating file paths.
-const path = require('node:path');
-
-// Store application data in a JSON file beside this program.
-const DATA_FILE = path.join(__dirname, 'project-data.json');
-
-// These are the allowed task statuses.
-const TASK_STATUSES = ['TO-DO', 'IN-PROGRESS', 'COMPLETE'];
-
-// These are the default stages in the business pipeline.
-const DEFAULT_PIPELINE = [
-  { id: 'idea', name: 'Idea', order: 1 },
-  { id: 'planning', name: 'Planning', order: 2 },
-  { id: 'preparation', name: 'Preparation', order: 3 },
-  { id: 'ready', name: 'Ready', order: 4 },
-  { id: 'active', name: 'Active', order: 5 },
-  { id: 'complete', name: 'Complete', order: 6 },
-];
-
-// Create a unique ID for a task or other future data object.
-function createId(prefix) {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-// Check that a date is valid and return it in YYYY-MM-DD format.
-function parseDate(dateText) {
-  // If no date was provided, return null.
-  if (!dateText) return null;
-
-  // Add a time to the date so JavaScript can validate it.
-  const date = new Date(`${dateText}T23:59:59`);
-
-  // Reject invalid dates.
-  if (Number.isNaN(date.getTime())) {
-    throw new Error(`Invalid date: ${dateText}. Use YYYY-MM-DD.`);
-  }
-
-  return dateText;
-}
-
-// Load saved data from project-data.json.
-function loadData() {
-  // If no saved data exists, begin with an empty task list.
-  if (!fs.existsSync(DATA_FILE)) {
-    return {
-      pipeline: DEFAULT_PIPELINE,
-      tasks: [],
-    };
-  }
-
-  // Read the file and convert its JSON text into a JavaScript object.
-  return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-}
-
-// Save the current data object as formatted JSON.
-function saveData(data) {
-  fs.writeFileSync(DATA_FILE, `${JSON.stringify(data, null, 2)}\n`);
-}
-
-// Find a pipeline stage using its ID.
-function findPipelineStage(data, stageId) {
-  const stage = data.pipeline.find((item) => item.id === stageId);
-
-  // Stop the program if the stage does not exist.
-  if (!stage) {
-    throw new Error(
-      `Unknown pipeline stage: ${stageId}. Available stages: ${data.pipeline
-        .map((item) => item.id)
-        .join(', ')}`,
-    );
-  }
-
-  return stage;
-}
-
-// Find a task using its ID.
-function findTask(data, taskId) {
-  const task = data.tasks.find((item) => item.id === taskId);
-
-  // Stop the program if the task does not exist.
-  if (!task) {
-    throw new Error(`Task not found: ${taskId}`);
-  }
-
-  return task;
-}
-
-// Calculate the percentage of tasks that are complete.
-function getPipelineProgress(data) {
-  // A pipeline with fewer than two stages cannot calculate useful progress.
-  if (data.pipeline.length < 2) return 0;
-
-  // Count completed tasks.
-  const completedTasks = data.tasks.filter(
-    (task) => task.status === 'COMPLETE',
-  ).length;
-
-  // Count all tasks.
-  const totalTasks = data.tasks.length;
-
-  // Avoid dividing by zero when there are no tasks.
-  if (totalTasks === 0) return 0;
-
-  return Math.round((completedTasks / totalTasks) * 100);
-}
-
-// Calculate how far a particular stage is through the pipeline.
-function getStageProgress(data, stageId) {
-  const stage = findPipelineStage(data, stageId);
-
-  return Math.round((stage.order / data.pipeline.length) * 100);
-}
-
-// Create and add a new task.
-function addTask(data, {
-  title,
-  description,
-  assignee,
-  dueDate,
-  stageId,
-}) {
-  // Every task must have a title.
-  if (!title) {
-    throw new Error('A task title is required.');
-  }
-
-  // Make sure the requested pipeline stage exists.
-  findPipelineStage(data, stageId);
-
-  // Build the new task object.
-  const task = {
-    id: createId('task'),
-    title,
-    description: description || '',
-    assignee: assignee || 'Unassigned',
-    dueDate: parseDate(dueDate),
-    status: 'TO-DO',
-    stageId,
-    createdAt: new Date().toISOString(),
+  const STORAGE_KEY = 'fall-cloud-planner-v1';
+  const STATUSES = ['TO-DO', 'IN-PROGRESS', 'COMPLETE'];
+  const STATUS_LABELS = {
+    'TO-DO': 'To-do',
+    'IN-PROGRESS': 'In progress',
+    COMPLETE: 'Complete'
   };
 
-  // Add the task to the task list.
-  data.tasks.push(task);
+  const seed = {
+    stages: [
+      { id: 'idea', name: 'Idea', order: 1 },
+      { id: 'planning', name: 'Planning', order: 2 },
+      { id: 'building', name: 'Building', order: 3 },
+      { id: 'review', name: 'Review', order: 4 },
+      { id: 'launched', name: 'Launched', order: 5 }
+    ],
 
-  return task;
-}
+    tasks: [
+      {
+        id: 'task-1',
+        title: 'Finalize project brief',
+        description: 'Confirm goals and success criteria with the team.',
+        assignee: 'Eldon',
+        dueDate: '2026-10-02',
+        status: 'IN-PROGRESS',
+        stageId: 'planning'
+      },
+      {
+        id: 'task-2',
+        title: 'Create launch checklist',
+        description: 'Collect the final steps for launch day.',
+        assignee: 'Maya',
+        dueDate: '2026-10-04',
+        status: 'TO-DO',
+        stageId: 'building'
+      },
+      {
+        id: 'task-3',
+        title: 'Review homepage copy',
+        description: 'Proofread the latest homepage draft.',
+        assignee: 'Jordan',
+        dueDate: '2026-10-01',
+        status: 'COMPLETE',
+        stageId: 'review'
+      }
+    ],
 
-// Update one or more properties of an existing task.
-function updateTask(data, taskId, changes) {
-  const task = findTask(data, taskId);
+    events: [
+      {
+        id: 'event-1',
+        title: 'Team stand-up',
+        date: '2026-10-01',
+        time: '09:00',
+        owner: 'Everyone'
+      },
+      {
+        id: 'event-2',
+        title: 'Design review',
+        date: '2026-10-02',
+        time: '13:30',
+        owner: 'Maya'
+      },
+      {
+        id: 'event-3',
+        title: 'Launch planning',
+        date: '2026-10-05',
+        time: '10:00',
+        owner: 'Everyone'
+      }
+    ],
 
-  // Make sure the new status is allowed.
-  if (changes.status && !TASK_STATUSES.includes(changes.status)) {
-    throw new Error(
-      `Invalid status. Use one of: ${TASK_STATUSES.join(', ')}.`,
+    files: [],
+
+    whiteboard:
+      'Ideas for the next team session:\n\n' +
+      '• What would make our handoffs smoother?\n' +
+      '• Which parts of the pipeline should be automated?'
+  };
+
+  let state = loadState();
+  let selectedCalendarDate = new Date('2026-10-01T12:00:00');
+  let calendarWeekOffset = 0;
+
+  function loadState() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) ||
+        structuredClone(seed);
+    } catch (_) {
+      return JSON.parse(JSON.stringify(seed));
+    }
+  }
+
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+    const status = document.querySelector('#save-status');
+    status.textContent = 'Saved just now';
+
+    setTimeout(() => {
+      status.textContent = 'Saved locally';
+    }, 1200);
+  }
+
+  function id(prefix) {
+    return `${prefix}-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 7)}`;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>'"]/g, character => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[character]));
+  }
+
+  function dateLabel(
+    value,
+    options = { month: 'short', day: 'numeric' }
+  ) {
+    if (!value) return 'No date';
+
+    return new Date(`${value}T12:00:00`)
+      .toLocaleDateString(undefined, options);
+  }
+
+  function formatStatus(status) {
+    return STATUS_LABELS[status] || status;
+  }
+
+  function pipelineProgress() {
+    const completedTasks = state.tasks.filter(
+      task => task.status === 'COMPLETE'
+    ).length;
+
+    return state.tasks.length
+      ? Math.round((completedTasks / state.tasks.length) * 100)
+      : 0;
+  }
+
+  function openTasks() {
+    return state.tasks.filter(task => task.status !== 'COMPLETE');
+  }
+
+  function render() {
+    renderDashboard();
+    renderTasks();
+    renderCalendar();
+    renderPipeline();
+    renderFiles();
+    renderWhiteboard();
+
+    document.querySelector('#task-count').textContent =
+      openTasks().length || '';
+  }
+
+  function renderDashboard() {
+    const progress = pipelineProgress();
+
+    document.querySelector('#dashboard-progress').textContent =
+      `${progress}%`;
+
+    document.querySelector('#dashboard-progress-bar').style.width =
+      `${progress}%`;
+
+    document.querySelector('#pipeline-bar').style.width =
+      `${progress}%`;
+
+    document.querySelector('#dashboard-stage').textContent =
+      `${state.tasks.filter(task => task.status === 'COMPLETE').length} ` +
+      `of ${state.tasks.length} tasks complete`;
+
+    document.querySelector('#open-task-count').textContent =
+      openTasks().length;
+
+    document.querySelector('#event-count').textContent =
+      state.events.filter(event =>
+        new Date(`${event.date}T${event.time || '12:00'}`) >= new Date()
+      ).length;
+
+    document.querySelector('#file-count').textContent =
+      state.files.length;
+
+    const dueThisWeek = openTasks().filter(task =>
+      task.dueDate && task.dueDate <= '2026-10-07'
+    ).length;
+
+    document.querySelector('#overdue-count').textContent =
+      `${dueThisWeek} due this week`;
+
+    document.querySelector('#dashboard-tasks').innerHTML =
+      state.tasks
+        .slice()
+        .sort((a, b) =>
+          (a.dueDate || 'z').localeCompare(b.dueDate || 'z')
+        )
+        .slice(0, 4)
+        .map(taskRow)
+        .join('') || empty('No tasks yet.');
+
+    document.querySelector('#dashboard-events').innerHTML =
+      state.events
+        .slice()
+        .sort(eventSort)
+        .slice(0, 4)
+        .map(eventRow)
+        .join('') || empty('No upcoming events.');
+
+    document.querySelector('#whiteboard-preview').textContent =
+      state.whiteboard ||
+      'Your team whiteboard is ready for ideas.';
+  }
+
+  function taskRow(task) {
+    return `
+      <div class="task-row">
+        <i class="status-dot ${task.status}"></i>
+
+        <div class="task-row-main">
+          <strong>${escapeHtml(task.title)}</strong>
+          <small>
+            ${escapeHtml(task.assignee)} · ${dateLabel(task.dueDate)}
+          </small>
+        </div>
+
+        <span class="badge ${task.status}">
+          ${formatStatus(task.status)}
+        </span>
+      </div>
+    `;
+  }
+
+  function eventRow(event) {
+    return `
+      <div class="event-row">
+        <div class="event-date">
+          <strong>
+            ${dateLabel(event.date, {
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric'
+            })}
+          </strong>
+        </div>
+
+        <div class="event-row-main">
+          <strong>${escapeHtml(event.title)}</strong>
+          <small>
+            ${escapeHtml(event.time || 'All day')} ·
+            ${escapeHtml(event.owner || 'Team')}
+          </small>
+        </div>
+      </div>
+    `;
+  }
+
+  function empty(message) {
+    return `<p class="muted">${message}</p>`;
+  }
+
+  function renderTasks() {
+    const query =
+      document.querySelector('#task-search').value.toLowerCase();
+
+    const filter =
+      document.querySelector('#task-filter').value;
+
+    const tasks = state.tasks.filter(task => {
+      const searchableText =
+        `${task.title} ${task.description} ${task.assignee}`
+          .toLowerCase();
+
+      const matchesSearch =
+        !query || searchableText.includes(query);
+
+      const matchesFilter =
+        filter === 'ALL' || task.status === filter;
+
+      return matchesSearch && matchesFilter;
+    });
+
+    document.querySelector('#task-columns').innerHTML =
+      STATUSES.map(status => `
+        <section class="task-column">
+          <div class="column-heading">
+            <span>${formatStatus(status)}</span>
+            <span>
+              ${tasks.filter(task => task.status === status).length}
+            </span>
+          </div>
+
+          ${
+            tasks
+              .filter(task => task.status === status)
+              .map(columnTask)
+              .join('') || empty('Nothing here yet.')
+          }
+        </section>
+      `).join('');
+  }
+
+  function columnTask(task) {
+    const nextStatus =
+      task.status === 'TO-DO'
+        ? 'IN-PROGRESS'
+        : task.status === 'IN-PROGRESS'
+          ? 'COMPLETE'
+          : 'TO-DO';
+
+    return `
+      <article class="column-task">
+        <h3>${escapeHtml(task.title)}</h3>
+
+        <p>
+          ${escapeHtml(task.description || 'No description')}
+        </p>
+
+        <footer>
+          <span>
+            ${escapeHtml(task.assignee)} · ${dateLabel(task.dueDate)}
+          </span>
+
+          <button
+            class="text-button advance-task"
+            data-id="${task.id}"
+            title="Move to ${formatStatus(nextStatus)}"
+          >
+            ${task.status === 'COMPLETE' ? '↶ Reopen' : 'Advance →'}
+          </button>
+        </footer>
+      </article>
+    `;
+  }
+
+  function getWeekStart(date) {
+    const weekStart = new Date(date);
+    const day = weekStart.getDay();
+
+    weekStart.setDate(
+      weekStart.getDate() - day + calendarWeekOffset * 7
+    );
+
+    weekStart.setHours(12, 0, 0, 0);
+
+    return weekStart;
+  }
+
+  function dateKey(date) {
+    return date.toISOString().slice(0, 10);
+  }
+
+  function eventSort(a, b) {
+    return `${a.date}${a.time}`.localeCompare(
+      `${b.date}${b.time}`
     );
   }
 
-  // Make sure the new pipeline stage exists.
-  if (changes.stageId) {
-    findPipelineStage(data, changes.stageId);
+  function renderCalendar() {
+    const start = getWeekStart(selectedCalendarDate);
+
+    const days = Array.from({ length: 7 }, (_, index) => {
+      const day = new Date(start);
+      day.setDate(day.getDate() + index);
+      return day;
+    });
+
+    document.querySelector('#calendar-label').textContent =
+      `${dateLabel(dateKey(days[0]), {
+        month: 'short',
+        day: 'numeric'
+      })} – ${dateLabel(dateKey(days[6]), {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      })}`;
+
+    const names = [
+      'Sun',
+      'Mon',
+      'Tue',
+      'Wed',
+      'Thu',
+      'Fri',
+      'Sat'
+    ];
+
+    const calendarDays = days.map(day => {
+      const key = dateKey(day);
+
+      const events = state.events.filter(
+        event => event.date === key
+      );
+
+      const today =
+        key === dateKey(new Date('2026-10-01T12:00:00'));
+
+      const selected =
+        key === dateKey(selectedCalendarDate);
+
+      return `
+        <div
+          class="calendar-day ${selected ? 'selected' : ''} ${
+            today ? 'today' : ''
+          }"
+          data-date="${key}"
+        >
+          <div class="day-number">${day.getDate()}</div>
+
+          ${events.map(event => `
+            <div class="day-event">
+              ${escapeHtml(event.title)}
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }).join('');
+
+    document.querySelector('#calendar-grid').innerHTML =
+      names.map(name =>
+        `<div class="calendar-day-name">${name}</div>`
+      ).join('') + calendarDays;
+
+    const selectedDate = dateKey(selectedCalendarDate);
+
+    document.querySelector('#calendar-events').innerHTML =
+      state.events
+        .filter(event => event.date === selectedDate)
+        .sort(eventSort)
+        .map(eventRow)
+        .join('') ||
+      empty(`No events on ${dateLabel(selectedDate)}.`);
   }
 
-  // Validate a changed deadline.
-  if (changes.dueDate) {
-    changes.dueDate = parseDate(changes.dueDate);
+  function renderPipeline() {
+    const percent = pipelineProgress();
+
+    document.querySelector('#pipeline-percent').textContent =
+      `${percent}%`;
+
+    document.querySelector('#pipeline-stages').innerHTML =
+      state.stages.map((stage, index) => {
+        const stageTasks = state.tasks.filter(
+          task => task.stageId === stage.id
+        );
+
+        const done =
+          stageTasks.length > 0 &&
+          stageTasks.every(task => task.status === 'COMPLETE');
+
+        const current =
+          stageTasks.some(task => task.status === 'IN-PROGRESS') ||
+          (!stageTasks.length && index === 0);
+
+        return `
+          <article class="stage-card ${done ? 'done' : ''} ${
+            current ? 'current' : ''
+          }">
+            <div class="stage-marker">
+              <i>${done ? '✓' : index + 1}</i>
+              <span>Stage ${index + 1}</span>
+            </div>
+
+            <h3>${escapeHtml(stage.name)}</h3>
+
+            <small>
+              ${stageTasks.length}
+              task${stageTasks.length === 1 ? '' : 's'}
+            </small>
+          </article>
+        `;
+      }).join('');
+
+    document.querySelector('#task-stage-options').innerHTML =
+      state.stages.map(stage => `
+        <option value="${stage.id}">
+          ${escapeHtml(stage.name)}
+        </option>
+      `).join('');
   }
 
-  // Copy the changes into the task and record the update time.
-  Object.assign(task, changes, {
-    updatedAt: new Date().toISOString(),
+  function renderFiles() {
+    document.querySelector('#file-total').textContent =
+      `${state.files.length} file${
+        state.files.length === 1 ? '' : 's'
+      }`;
+
+    document.querySelector('#file-list').innerHTML =
+      state.files.map(file => `
+        <div class="file-row">
+          <span class="file-icon">▤</span>
+
+          <div class="file-row-main">
+            <strong>${escapeHtml(file.name)}</strong>
+            <small>
+              ${formatBytes(file.size)} ·
+              added ${dateLabel(file.addedAt)}
+            </small>
+          </div>
+
+          <div class="file-actions">
+            <button
+              class="remove-file"
+              data-id="${file.id}"
+              title="Remove file"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      `).join('') || empty('No shared files yet.');
+  }
+
+  function renderWhiteboard() {
+    const board = document.querySelector('#whiteboard');
+
+    if (document.activeElement !== board) {
+      board.value = state.whiteboard || '';
+    }
+
+    const words =
+      (board.value.trim().match(/\S+/g) || []).length;
+
+    document.querySelector('#word-count').textContent =
+      `${words} word${words === 1 ? '' : 's'}`;
+  }
+
+  function formatBytes(bytes) {
+    if (!bytes) return '0 KB';
+
+    const units = ['B', 'KB', 'MB', 'GB'];
+
+    const unitIndex = Math.min(
+      Math.floor(Math.log(bytes) / Math.log(1024)),
+      units.length - 1
+    );
+
+    return `${(bytes / 1024 ** unitIndex).toFixed(
+      unitIndex ? 1 : 0
+    )} ${units[unitIndex]}`;
+  }
+
+  function showDialog(id) {
+    document.querySelector(id).showModal();
+  }
+
+  document.addEventListener('click', event => {
+    const nav = event.target.closest('[data-view]');
+
+    if (nav) {
+      document.querySelectorAll('.view').forEach(view => {
+        view.classList.remove('active-view');
+      });
+
+      document
+        .querySelector(`#${nav.dataset.view}-view`)
+        .classList.add('active-view');
+
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.toggle('active', link === nav);
+      });
+
+      return;
+    }
+
+    const link = event.target.closest('[data-view-link]');
+
+    if (link) {
+      document
+        .querySelector(`[data-view="${link.dataset.viewLink}"]`)
+        .click();
+    }
+
+    const action =
+      event.target.closest('[data-action]')?.dataset.action;
+
+    if (action === 'new-task') showDialog('#task-dialog');
+    if (action === 'new-event') showDialog('#event-dialog');
+    if (action === 'new-stage') showDialog('#stage-dialog');
+
+    const advance = event.target.closest('.advance-task');
+
+    if (advance) {
+      const task = state.tasks.find(
+        taskItem => taskItem.id === advance.dataset.id
+      );
+
+      task.status =
+        task.status === 'TO-DO'
+          ? 'IN-PROGRESS'
+          : task.status === 'IN-PROGRESS'
+            ? 'COMPLETE'
+            : 'TO-DO';
+
+      saveState();
+      render();
+    }
+
+    const remove = event.target.closest('.remove-file');
+
+    if (remove) {
+      state.files = state.files.filter(
+        file => file.id !== remove.dataset.id
+      );
+
+      saveState();
+      render();
+    }
+
+    const day = event.target.closest('.calendar-day');
+
+    if (day) {
+      selectedCalendarDate =
+        new Date(`${day.dataset.date}T12:00:00`);
+
+      renderCalendar();
+    }
   });
 
-  return task;
-}
+  document
+    .querySelector('#task-search')
+    .addEventListener('input', renderTasks);
 
-// Move a task forward by one stage in the pipeline.
-function moveTaskToNextStage(data, taskId) {
-  const task = findTask(data, taskId);
-  const currentStage = findPipelineStage(data, task.stageId);
+  document
+    .querySelector('#task-filter')
+    .addEventListener('change', renderTasks);
 
-  // Find the next stage based on the current stage's order number.
-  const nextStage = data.pipeline.find(
-    (stage) => stage.order === currentStage.order + 1,
-  );
+  document
+    .querySelector('#previous-week')
+    .addEventListener('click', () => {
+      calendarWeekOffset--;
+      renderCalendar();
+    });
 
-  // If there is no next stage, the task is already at the end.
-  if (!nextStage) {
-    task.status = 'COMPLETE';
-    return task;
+  document
+    .querySelector('#next-week')
+    .addEventListener('click', () => {
+      calendarWeekOffset++;
+      renderCalendar();
+    });
+
+  document
+    .querySelector('#task-form')
+    .addEventListener('submit', event => {
+      event.preventDefault();
+
+      const data = new FormData(event.currentTarget);
+
+      state.tasks.push({
+        id: id('task'),
+        title: data.get('title').trim(),
+        description: data.get('description').trim(),
+        assignee: data.get('assignee').trim() || 'Unassigned',
+        dueDate: data.get('dueDate'),
+        status: 'TO-DO',
+        stageId: data.get('stageId')
+      });
+
+      saveState();
+      event.currentTarget.closest('dialog').close();
+      event.currentTarget.reset();
+      render();
+    });
+
+  document
+    .querySelector('#event-form')
+    .addEventListener('submit', event => {
+      event.preventDefault();
+
+      const data = new FormData(event.currentTarget);
+
+      state.events.push({
+        id: id('event'),
+        title: data.get('title').trim(),
+        date: data.get('date'),
+        time: data.get('time'),
+        owner: data.get('owner').trim() || 'Team'
+      });
+
+      saveState();
+      event.currentTarget.closest('dialog').close();
+      event.currentTarget.reset();
+      render();
+    });
+
+  document
+    .querySelector('#stage-form')
+    .addEventListener('submit', event => {
+      event.preventDefault();
+
+      const data = new FormData(event.currentTarget);
+
+      state.stages.push({
+        id: id('stage'),
+        name: data.get('name').trim(),
+        order: state.stages.length + 1
+      });
+
+      saveState();
+      event.currentTarget.closest('dialog').close();
+      event.currentTarget.reset();
+      render();
+    });
+
+  document
+    .querySelector('#whiteboard')
+    .addEventListener('input', event => {
+      state.whiteboard = event.target.value;
+      saveState();
+      renderWhiteboard();
+    });
+
+  const dropZone = document.querySelector('#drop-zone');
+  const fileInput = document.querySelector('#file-input');
+
+  function addFiles(files) {
+    Array.from(files).forEach(file => {
+      state.files.push({
+        id: id('file'),
+        name: file.name,
+        size: file.size,
+        addedAt: '2026-10-01'
+      });
+    });
+
+    saveState();
+    render();
   }
 
-  // Move the task forward.
-  task.stageId = nextStage.id;
+  fileInput.addEventListener('change', event => {
+    addFiles(event.target.files);
+  });
 
-  // Completing the final stage completes the task.
-  // Otherwise, moving forward makes the task IN-PROGRESS.
-  task.status = nextStage.id === 'complete'
-    ? 'COMPLETE'
-    : 'IN-PROGRESS';
+  ['dragenter', 'dragover'].forEach(type => {
+    dropZone.addEventListener(type, event => {
+      event.preventDefault();
+      dropZone.classList.add('dragging');
+    });
+  });
 
-  // Record when the task was moved.
-  task.updatedAt = new Date().toISOString();
+  ['dragleave', 'drop'].forEach(type => {
+    dropZone.addEventListener(type, event => {
+      event.preventDefault();
+      dropZone.classList.remove('dragging');
+    });
+  });
 
-  return task;
-}
+  dropZone.addEventListener('drop', event => {
+    addFiles(event.dataTransfer.files);
+  });
 
-// Turn a task object into readable text for the terminal.
-function formatTask(task, data) {
-  const stage = findPipelineStage(data, task.stageId);
-
-  return [
-    `${task.id}: ${task.title}`,
-    `  Status: ${task.status}`,
-    `  Stage: ${stage.name}`,
-    `  Assigned to: ${task.assignee}`,
-    `  Due: ${task.dueDate || 'No deadline'}`,
-    `  Description: ${task.description || 'None'}`,
-  ].join('\n');
-}
-
-// Display instructions for using this program.
-function printHelp() {
-  console.log(`
-Project Progression Planner
-
-Commands:
-  pipeline
-      Show the pipeline stages and overall task progress.
-
-  tasks [status]
-      List all tasks, or filter by TO-DO, IN-PROGRESS, or COMPLETE.
-
-  add-task "Title" "Description" "Assignee" YYYY-MM-DD stage-id
-      Create a task. Use - for an empty description, assignee, or deadline.
-
-  update-task task-id field value
-      Update status, assignee, description, dueDate, or stageId.
-
-  advance-task task-id
-      Move a task to the next pipeline stage.
-
-Examples:
-  node project-planner.js pipeline
-  node project-planner.js add-task "Create homepage" "Build first draft" "Alex" 2026-10-01 planning
-  node project-planner.js tasks IN-PROGRESS
-  node project-planner.js advance-task task-123
-`);
-}
-
-// Process a command entered through the terminal.
-function runCommand(args) {
-  // The first argument is the command.
-  // The remaining arguments contain command values.
-  const [command, ...values] = args;
-
-  // Load the current data before performing an action.
-  const data = loadData();
-
-  // Choose an action based on the command.
-  switch (command) {
-    // Display pipeline stages and progress.
-    case 'pipeline': {
-      console.log('Pipeline:');
-
-      // Print every stage in order.
-      data.pipeline.forEach((stage, index) => {
-        // Count tasks currently assigned to this stage.
-        const stageTasks = data.tasks.filter(
-          (task) => task.stageId === stage.id,
-        );
-
-        console.log(
-          `${index + 1}. ${stage.name} ` +
-          `(${stageTasks.length} task` +
-          `${stageTasks.length === 1 ? '' : 's'}) - ` +
-          `${getStageProgress(data, stage.id)}% stage progress`,
-        );
-      });
-
-      // Display the percentage of completed tasks.
-      console.log(
-        `Overall task progress: ${getPipelineProgress(data)}%`,
-      );
-
-      break;
-    }
-
-    // Display all tasks or filter them by status.
-    case 'tasks': {
-      const requestedStatus = values[0];
-
-      // If a status was supplied, only show matching tasks.
-      // Otherwise, show every task.
-      const tasks = requestedStatus
-        ? data.tasks.filter(
-            (task) => task.status === requestedStatus,
-          )
-        : data.tasks;
-
-      // Tell the user when nothing matched.
-      if (tasks.length === 0) {
-        console.log('No matching tasks.');
-        break;
+  document
+    .querySelector('#reset-data')
+    .addEventListener('click', () => {
+      if (confirm('Reset all local demo data?')) {
+        state = JSON.parse(JSON.stringify(seed));
+        saveState();
+        render();
       }
+    });
 
-      // Print each matching task.
-      tasks.forEach((task) => {
-        console.log(formatTask(task, data));
-      });
-
-      break;
-    }
-
-    // Create a new task.
-    case 'add-task': {
-      // Read task values from the command-line arguments.
-      const [
-        title,
-        description,
-        assignee,
-        dueDate,
-        stageId = 'idea',
-      ] = values;
-
-      const task = addTask(data, {
-        title,
-        description: description === '-' ? '' : description,
-        assignee: assignee === '-' ? '' : assignee,
-        dueDate: dueDate === '-' ? null : dueDate,
-        stageId,
-      });
-
-      // Save the new task to project-data.json.
-      saveData(data);
-
-      console.log(
-        'Task created:\n' + formatTask(task, data),
-      );
-
-      break;
-    }
-
-    // Update one property on an existing task.
-    case 'update-task': {
-      const [taskId, field, value] = values;
-
-      // Make sure all required arguments were provided.
-      if (!taskId || !field || value === undefined) {
-        throw new Error(
-          'Usage: update-task task-id field value',
-        );
-      }
-
-      // Use a computed property name so the selected field is updated.
-      const task = updateTask(data, taskId, {
-        [field]: field === 'dueDate' && value === '-'
-          ? null
-          : value,
-      });
-
-      // Save the updated task.
-      saveData(data);
-
-      console.log(
-        'Task updated:\n' + formatTask(task, data),
-      );
-
-      break;
-    }
-
-    // Advance a task to the next pipeline stage.
-    case 'advance-task': {
-      const [taskId] = values;
-
-      if (!taskId) {
-        throw new Error(
-          'Usage: advance-task task-id',
-        );
-      }
-
-      const task = moveTaskToNextStage(data, taskId);
-
-      // Save the task after moving it.
-      saveData(data);
-
-      console.log(
-        'Task advanced:\n' + formatTask(task, data),
-      );
-
-      break;
-    }
-
-    // Display help when the user enters "help" or no command.
-    case 'help':
-    case undefined:
-      printHelp();
-      break;
-
-    // Handle invalid commands.
-    default:
-      throw new Error(
-        `Unknown command: ${command}. ` +
-        'Run "node project-planner.js help".',
-      );
-  }
-}
-
-// Only run the command-line program when this file is executed directly.
-// This prevents the commands from running automatically if another file
-// imports this file as a reusable module.
-if (require.main === module) {
-  try {
-    // Remove "node" and the filename from the command-line arguments.
-    runCommand(process.argv.slice(2));
-  } catch (error) {
-    // Display errors without showing a confusing stack trace.
-    console.error(`Error: ${error.message}`);
-
-    // Tell Node.js that the program ended unsuccessfully.
-    process.exitCode = 1;
-  }
-}
-
-// Export reusable functions for a future web app or test file.
-module.exports = {
-  DEFAULT_PIPELINE,
-  TASK_STATUSES,
-  addTask,
-  getPipelineProgress,
-  getStageProgress,
-  loadData,
-  moveTaskToNextStage,
-  saveData,
-  updateTask,
-};
+  render();
+})();

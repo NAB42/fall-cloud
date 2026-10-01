@@ -1,16 +1,52 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Whiteboard</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fall Cloud | Project Planner</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="pipeline.js"></script>
 </head>
 <body>
-    <h1>Shared Whiteboard</h1>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">F</span><span>Fall Cloud</span></div>
+    <div class="topbar-actions"><span id="save-status" class="save-status">Saved locally</span><button id="reset-data" class="button button-ghost">Reset demo data</button></div>
+  </header>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <p class="eyebrow">Workspace</p>
+      <nav class="nav" aria-label="Main navigation">
+        <button class="nav-link active" data-view="dashboard">⌂ <span>Dashboard</span></button>
+        <button class="nav-link" data-view="tasks">✓ <span>Tasks</span><span id="task-count" class="nav-count"></span></button>
+        <button class="nav-link" data-view="calendar">◷ <span>Calendar</span></button>
+        <button class="nav-link" data-view="pipeline">↗ <span>Pipeline</span></button>
+        <button class="nav-link" data-view="files">▣ <span>File drop</span></button>
+        <button class="nav-link" data-view="whiteboard">✎ <span>Whiteboard</span></button>
+      </nav>
+      <div class="sidebar-footer"><span class="avatar">EM</span><div><strong>Team workspace</strong><small>Local demo mode</small></div></div>
+    </aside>
+    <main class="main-content">
+      <section id="dashboard-view" class="view active-view">
+        <div class="page-heading"><div><p class="eyebrow">Thursday, October 1, 2026</p><h1>Good afternoon, team.</h1><p class="muted">Keep the work moving and the whole team in the loop.</p></div><button class="button button-primary" data-action="new-task">+ New task</button></div>
+        <div class="stats-grid"><article class="stat-card"><span>Pipeline progress</span><strong id="dashboard-progress">0%</strong><div class="progress-track"><i id="dashboard-progress-bar"></i></div><small id="dashboard-stage">No active stage</small></article><article class="stat-card"><span>Open tasks</span><strong id="open-task-count">0</strong><small id="overdue-count">0 due soon</small></article><article class="stat-card"><span>Upcoming events</span><strong id="event-count">0</strong><small>in the next 7 days</small></article><article class="stat-card"><span>Shared files</span><strong id="file-count">0</strong><small>available to your team</small></article></div>
+        <div class="dashboard-grid"><article class="panel"><div class="panel-heading"><div><p class="eyebrow">Focus list</p><h2>Top tasks</h2></div><button class="text-button" data-view-link="tasks">View all →</button></div><div id="dashboard-tasks" class="task-list"></div></article><article class="panel"><div class="panel-heading"><div><p class="eyebrow">Next up</p><h2>Calendar</h2></div><button class="text-button" data-view-link="calendar">Open calendar →</button></div><div id="dashboard-events" class="event-list"></div></article></div>
+        <article class="panel whiteboard-preview"><div class="panel-heading"><div><p class="eyebrow">Shared space</p><h2>Whiteboard</h2></div><button class="text-button" data-view-link="whiteboard">Open whiteboard →</button></div><p id="whiteboard-preview" class="board-copy"></p></article>
+      </section>
 
-    <textarea id="whiteboard" placeholder="Type here..."></textarea>
+      <section id="tasks-view" class="view"><div class="page-heading"><div><p class="eyebrow">Work management</p><h1>Tasks</h1><p class="muted">Assign work, set deadlines, and move tasks through the workflow.</p></div><button class="button button-primary" data-action="new-task">+ New task</button></div><div class="toolbar"><label class="search-box">⌕ <input id="task-search" placeholder="Search tasks..."></label><select id="task-filter"><option value="ALL">All statuses</option><option value="TO-DO">To-do</option><option value="IN-PROGRESS">In progress</option><option value="COMPLETE">Complete</option></select></div><div id="task-columns" class="task-columns"></div></section>
 
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="app.js"></script>
+      <section id="calendar-view" class="view"><div class="page-heading"><div><p class="eyebrow">Team schedule</p><h1>Calendar</h1><p class="muted">Keep meetings, milestones, and deadlines visible to everyone.</p></div><button class="button button-primary" data-action="new-event">+ Add event</button></div><div class="calendar-layout"><article class="panel"><div class="calendar-header"><button id="previous-week" class="icon-button">←</button><h2 id="calendar-label"></h2><button id="next-week" class="icon-button">→</button></div><div id="calendar-grid" class="calendar-grid"></div></article><aside class="panel"><div class="panel-heading"><div><p class="eyebrow">Selected week</p><h2>Schedule</h2></div></div><div id="calendar-events" class="event-list"></div></aside></div></section>
+
+      <section id="pipeline-view" class="view"><div class="page-heading"><div><p class="eyebrow">Project progression</p><h1>Pipeline</h1><p class="muted">Move work forward in the order your business needs.</p></div><button class="button button-primary" data-action="new-stage">+ Add stage</button></div><article class="panel pipeline-panel"><div class="pipeline-summary"><div><span class="eyebrow">Current pipeline</span><h2>Website launch</h2></div><strong id="pipeline-percent">0%</strong></div><div class="progress-track large"><i id="pipeline-bar"></i></div><div id="pipeline-stages" class="pipeline-stages"></div></article></section>
+
+      <section id="files-view" class="view"><div class="page-heading"><div><p class="eyebrow">Shared resources</p><h1>File drop</h1><p class="muted">Drop files here so everyone can find the latest version.</p></div></div><article id="drop-zone" class="panel drop-zone"><div class="drop-icon">↑</div><h2>Drop files to upload</h2><p class="muted">or choose files from your computer</p><label class="button button-primary">Choose files<input id="file-input" type="file" multiple hidden></label></article><article class="panel"><div class="panel-heading"><h2>Shared files</h2><span id="file-total" class="muted"></span></div><div id="file-list" class="file-list"></div></article></section>
+
+      <section id="whiteboard-view" class="view"><div class="page-heading"><div><p class="eyebrow">Ideas & notes</p><h1>Whiteboard</h1><p class="muted">A shared space for brainstorming, reminders, and rough ideas.</p></div></div><article class="panel board-panel"><textarea id="whiteboard" aria-label="Shared whiteboard" placeholder="Start writing an idea..."></textarea><div class="board-footer"><span id="word-count">0 words</span><span>Autosaves in this browser</span></div></article></section>
+    </main>
+  </div>
+  <dialog id="task-dialog"><form method="dialog" id="task-form"><div class="dialog-heading"><h2>New task</h2><button value="cancel" class="icon-button">×</button></div><label>Task title<input name="title" required placeholder="e.g. Review launch copy"></label><label>Description<textarea name="description" rows="3" placeholder="What needs to be done?"></textarea></label><div class="form-grid"><label>Assignee<input name="assignee" placeholder="Team member"></label><label>Due date<input name="dueDate" type="date"></label></div><label>Pipeline stage<select name="stageId" id="task-stage-options"></select></label><div class="dialog-actions"><button value="cancel" class="button button-ghost">Cancel</button><button value="default" class="button button-primary">Create task</button></div></form></dialog>
+  <dialog id="event-dialog"><form method="dialog" id="event-form"><div class="dialog-heading"><h2>Add calendar event</h2><button value="cancel" class="icon-button">×</button></div><label>Event title<input name="title" required placeholder="e.g. Team stand-up"></label><div class="form-grid"><label>Date<input name="date" type="date" required></label><label>Time<input name="time" type="time" value="09:00"></label></div><label>Owner<input name="owner" placeholder="Team member"></label><div class="dialog-actions"><button value="cancel" class="button button-ghost">Cancel</button><button value="default" class="button button-primary">Add event</button></div></form></dialog>
+  <dialog id="stage-dialog"><form method="dialog" id="stage-form"><div class="dialog-heading"><h2>Add pipeline stage</h2><button value="cancel" class="icon-button">×</button></div><label>Stage name<input name="name" required placeholder="e.g. Launch"></label><div class="dialog-actions"><button value="cancel" class="button button-ghost">Cancel</button><button value="default" class="button button-primary">Add stage</button></div></form></dialog>
+  <script src="pipeline.js"></script>
 </body>
 </html>
