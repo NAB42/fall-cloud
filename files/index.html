@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fall Cloud | File drop</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body data-page="files">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">F</span><span>Fall Cloud</span></div>
+    <div class="topbar-actions"><span id="save-status" class="save-status">Saved locally</span><button id="reset-data" class="button button-ghost">Reset demo data</button></div>
+  </header>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <p class="eyebrow">Workspace</p>
+      <nav class="nav" aria-label="Main navigation">
+        <a class="nav-link" href="/">⌂ <span>Dashboard</span></a>
+        <a class="nav-link" href="/tasks/">✓ <span>Tasks</span><span id="task-count" class="nav-count"></span></a>
+        <a class="nav-link" href="/calendar/">◷ <span>Calendar</span></a>
+        <a class="nav-link" href="/pipeline/">↗ <span>Pipeline</span></a>
+        <a class="nav-link active" href="/files/">▣ <span>File drop</span></a>
+        <a class="nav-link" href="/whiteboard/">✎ <span>Whiteboard</span></a>
+      </nav>
+      <div class="sidebar-footer"><span class="avatar">EM</span><div><strong>Team workspace</strong><small>Local demo mode</small></div></div>
+    </aside>
+    <main class="main-content">
+      <div class="page-heading"><div><p class="eyebrow">Shared resources</p><h1>File drop</h1><p class="muted">Drop files here so everyone can find the latest version.</p></div></div>
+      <article id="drop-zone" class="panel drop-zone"><div class="drop-icon">↑</div><h2>Drop files to upload</h2><p class="muted">or choose files from your computer</p><label class="button button-primary">Choose files<input id="file-input" type="file" multiple hidden></label></article>
+      <article class="panel"><div class="panel-heading"><h2>Shared files</h2><span id="file-total" class="muted"></span></div><div id="file-list" class="file-list"></div></article>
+    </main>
+  </div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

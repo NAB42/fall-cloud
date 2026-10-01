@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fall Cloud | Project Planner</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body data-page="dashboard">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">F</span><span>Fall Cloud</span></div>
+    <div class="topbar-actions"><span id="save-status" class="save-status">Saved locally</span><button id="reset-data" class="button button-ghost">Reset demo data</button></div>
+  </header>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <p class="eyebrow">Workspace</p>
+      <nav class="nav" aria-label="Main navigation">
+        <a class="nav-link active" href="/">⌂ <span>Dashboard</span></a>
+        <a class="nav-link" href="/tasks/">✓ <span>Tasks</span><span id="task-count" class="nav-count"></span></a>
+        <a class="nav-link" href="/calendar/">◷ <span>Calendar</span></a>
+        <a class="nav-link" href="/pipeline/">↗ <span>Pipeline</span></a>
+        <a class="nav-link" href="/files/">▣ <span>File drop</span></a>
+        <a class="nav-link" href="/whiteboard/">✎ <span>Whiteboard</span></a>
+      </nav>
+      <div class="sidebar-footer"><span class="avatar">EM</span><div><strong>Team workspace</strong><small>Local demo mode</small></div></div>
+    </aside>
+    <main class="main-content">
+      <section class="dashboard-view">
+        <div class="page-heading"><div><p id="dashboard-date" class="eyebrow">Thursday, October 1, 2026</p><h1>Good afternoon, team.</h1><p class="muted">Keep the work moving and the whole team in the loop.</p></div><a class="button button-primary" href="/tasks/?new=task">+ New task</a></div>
+        <div class="stats-grid"><article class="stat-card"><span>Pipeline progress</span><strong id="dashboard-progress">0%</strong><div class="progress-track"><i id="dashboard-progress-bar"></i></div><small id="dashboard-stage">No active stage</small></article><article class="stat-card"><span>Open tasks</span><strong id="open-task-count">0</strong><small id="overdue-count">0 due soon</small></article><article class="stat-card"><span>Upcoming events</span><strong id="event-count">0</strong><small>in the next 7 days</small></article><article class="stat-card"><span>Shared files</span><strong id="file-count">0</strong><small>available to your team</small></article></div>
+        <div class="dashboard-grid"><article class="panel"><div class="panel-heading"><div><p class="eyebrow">Focus list</p><h2>Top tasks</h2></div><a class="text-button" href="/tasks/">View all →</a></div><div id="dashboard-tasks" class="task-list"></div></article><article class="panel"><div class="panel-heading"><div><p class="eyebrow">Next up</p><h2>Calendar</h2></div><a class="text-button" href="/calendar/">Open calendar →</a></div><div id="dashboard-events" class="event-list"></div></article></div>
+        <article class="panel whiteboard-preview"><div class="panel-heading"><div><p class="eyebrow">Shared space</p><h2>Whiteboard</h2></div><a class="text-button" href="/whiteboard/">Open whiteboard →</a></div><p id="whiteboard-preview" class="board-copy"></p></article>
+      </section>
+    </main>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

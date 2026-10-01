@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fall Cloud | Tasks</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body data-page="tasks">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">F</span><span>Fall Cloud</span></div>
+    <div class="topbar-actions"><span id="save-status" class="save-status">Saved locally</span><button id="reset-data" class="button button-ghost">Reset demo data</button></div>
+  </header>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <p class="eyebrow">Workspace</p>
+      <nav class="nav" aria-label="Main navigation">
+        <a class="nav-link" href="/">⌂ <span>Dashboard</span></a>
+        <a class="nav-link active" href="/tasks/">✓ <span>Tasks</span><span id="task-count" class="nav-count"></span></a>
+        <a class="nav-link" href="/calendar/">◷ <span>Calendar</span></a>
+        <a class="nav-link" href="/pipeline/">↗ <span>Pipeline</span></a>
+        <a class="nav-link" href="/files/">▣ <span>File drop</span></a>
+        <a class="nav-link" href="/whiteboard/">✎ <span>Whiteboard</span></a>
+      </nav>
+      <div class="sidebar-footer"><span class="avatar">EM</span><div><strong>Team workspace</strong><small>Local demo mode</small></div></div>
+    </aside>
+    <main class="main-content">
+      <div class="page-heading"><div><p class="eyebrow">Work management</p><h1>Tasks</h1><p class="muted">Assign work, set deadlines, and move tasks through the workflow.</p></div><button class="button button-primary" data-action="new-task">+ New task</button></div>
+      <div class="toolbar"><label class="search-box">⌕ <input id="task-search" placeholder="Search tasks..." aria-label="Search tasks"></label><select id="task-filter" aria-label="Filter tasks"><option value="ALL">All statuses</option><option value="TO-DO">To-do</option><option value="IN-PROGRESS">In progress</option><option value="COMPLETE">Complete</option></select></div>
+      <div id="task-columns" class="task-columns"></div>
+    </main>
+  </div>
+  <dialog id="task-dialog"><form method="dialog" id="task-form"><div class="dialog-heading"><h2>New task</h2><button value="cancel" class="icon-button" aria-label="Close">×</button></div><label>Task title<input name="title" required placeholder="e.g. Review launch copy"></label><label>Description<textarea name="description" rows="3" placeholder="What needs to be done?"></textarea></label><div class="form-grid"><label>Assignee<input name="assignee" placeholder="Team member"></label><label>Due date<input name="dueDate" type="date"></label></div><label>Pipeline stage<select name="stageId" id="task-stage-options"></select></label><div class="dialog-actions"><button value="cancel" class="button button-ghost">Cancel</button><button value="default" class="button button-primary">Create task</button></div></form></dialog>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

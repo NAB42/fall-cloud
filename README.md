@@ -15,3 +15,9 @@ The main page has a dashboard and whiteboard area where an overview can be shown
 ~ A space for specific tasks. These tasks can have deadlines, be assigned to specific people, and be marked as TODO, in-progress, or complete.
 
 ~ An overall dashboard with whiteboard. This will have a progress bar for the current pipeline, a small overview of the calendar, A button for accessing the dropbox area, and some top tasks that can be filtered. To the side is a place for a whiteboard, which is basically a free space for people to brainstorm and come up with ideas.
+
+## Run locally
+
+Install dependencies with `npm install`, then start the app with `npm start`. Open `http://localhost:8080` for the dashboard. Tasks, calendar, pipeline, file drop, and whiteboard are linked from the left navigation. Run `npm test` for the whiteboard service checks.
+
+Planner tasks, events, stages, and file metadata are stored in this browser. Files are not uploaded. Whiteboard content is shared by the local Socket.IO server and saved in `.data/whiteboard.json`. This demo has no authentication and is intended for local use.

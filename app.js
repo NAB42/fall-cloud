@@ -1,28 +1,29 @@
-const socket = io("http://localhost:3001");
+import { openTasks } from './shared/helpers.js';
+import { resetState } from './shared/state.js';
+import { initDashboard } from './dashboard/dashboard.js';
+import { initTasks } from './tasks/tasks.js';
+import { initCalendar } from './calendar/calendar.js';
+import { initPipeline } from './pipeline/pipeline.js';
+import { initFiles } from './files/files.js';
+import { initWhiteboardPreview } from './whiteboard/whiteboard.js';
 
-const whiteboard = document.getElementById("whiteboard");
+const modules = {
+  dashboard: initDashboard,
+  tasks: initTasks,
+  calendar: initCalendar,
+  pipeline: initPipeline,
+  files: initFiles
+};
 
-// Load initial content
-fetch("http://localhost:3001/whiteboard")
-    .then(res => res.json())
-    .then(data => {
-        whiteboard.value = data.content;
-    });
+const page = document.body.dataset.page;
+modules[page]?.();
 
-// Send updates when typing
-whiteboard.addEventListener("input", () => {
-    const content = whiteboard.value;
+const taskCount = document.querySelector('#task-count');
+if (taskCount) taskCount.textContent = openTasks().length || '';
 
-    fetch("http://localhost:3001/whiteboard", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content })
-    });
-
-    socket.emit("whiteboardUpdate", content);
+const resetButton = document.querySelector('#reset-data');
+resetButton?.addEventListener('click', () => {
+  if (confirm('Reset all local demo data?')) resetState();
 });
 
-// Receive real-time updates
-socket.on("whiteboardUpdate", (content) => {
-    whiteboard.value = content;
-});
+initWhiteboardPreview();

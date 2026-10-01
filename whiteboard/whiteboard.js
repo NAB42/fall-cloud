@@ -1,3 +1,5 @@
+import { state } from '../shared/state.js';
+
 export async function initWhiteboardPreview() {
   const preview = document.querySelector('#whiteboard-preview');
   if (!preview) return;
@@ -12,9 +14,7 @@ export async function initWhiteboardPreview() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          content: localStorage.getItem('fall-cloud-planner-v1')
-            ? JSON.parse(localStorage.getItem('fall-cloud-planner-v1')).whiteboard || ''
-            : '',
+          content: state.whiteboard || '',
           initializeOnly: true
         })
       });

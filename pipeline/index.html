@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fall Cloud | Pipeline</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body data-page="pipeline">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">F</span><span>Fall Cloud</span></div>
+    <div class="topbar-actions"><span id="save-status" class="save-status">Saved locally</span><button id="reset-data" class="button button-ghost">Reset demo data</button></div>
+  </header>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <p class="eyebrow">Workspace</p>
+      <nav class="nav" aria-label="Main navigation">
+        <a class="nav-link" href="/">⌂ <span>Dashboard</span></a>
+        <a class="nav-link" href="/tasks/">✓ <span>Tasks</span><span id="task-count" class="nav-count"></span></a>
+        <a class="nav-link" href="/calendar/">◷ <span>Calendar</span></a>
+        <a class="nav-link active" href="/pipeline/">↗ <span>Pipeline</span></a>
+        <a class="nav-link" href="/files/">▣ <span>File drop</span></a>
+        <a class="nav-link" href="/whiteboard/">✎ <span>Whiteboard</span></a>
+      </nav>
+      <div class="sidebar-footer"><span class="avatar">EM</span><div><strong>Team workspace</strong><small>Local demo mode</small></div></div>
+    </aside>
+    <main class="main-content">
+      <div class="page-heading"><div><p class="eyebrow">Project progression</p><h1>Pipeline</h1><p class="muted">Move work forward in the order your business needs.</p></div><button class="button button-primary" data-action="new-stage">+ Add stage</button></div>
+      <article class="panel pipeline-panel"><div class="pipeline-summary"><div><span class="eyebrow">Current pipeline</span><h2>Website launch</h2></div><strong id="pipeline-percent">0%</strong></div><div class="progress-track large"><i id="pipeline-bar"></i></div><div id="pipeline-stages" class="pipeline-stages"></div></article>
+    </main>
+  </div>
+  <dialog id="stage-dialog"><form method="dialog" id="stage-form"><div class="dialog-heading"><h2>Add pipeline stage</h2><button value="cancel" class="icon-button" aria-label="Close">×</button></div><label>Stage name<input name="name" required placeholder="e.g. Launch"></label><div class="dialog-actions"><button value="cancel" class="button button-ghost">Cancel</button><button value="default" class="button button-primary">Add stage</button></div></form></dialog>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

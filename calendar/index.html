@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fall Cloud | Calendar</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body data-page="calendar">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">F</span><span>Fall Cloud</span></div>
+    <div class="topbar-actions"><span id="save-status" class="save-status">Saved locally</span><button id="reset-data" class="button button-ghost">Reset demo data</button></div>
+  </header>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <p class="eyebrow">Workspace</p>
+      <nav class="nav" aria-label="Main navigation">
+        <a class="nav-link" href="/">⌂ <span>Dashboard</span></a>
+        <a class="nav-link" href="/tasks/">✓ <span>Tasks</span><span id="task-count" class="nav-count"></span></a>
+        <a class="nav-link active" href="/calendar/">◷ <span>Calendar</span></a>
+        <a class="nav-link" href="/pipeline/">↗ <span>Pipeline</span></a>
+        <a class="nav-link" href="/files/">▣ <span>File drop</span></a>
+        <a class="nav-link" href="/whiteboard/">✎ <span>Whiteboard</span></a>
+      </nav>
+      <div class="sidebar-footer"><span class="avatar">EM</span><div><strong>Team workspace</strong><small>Local demo mode</small></div></div>
+    </aside>
+    <main class="main-content">
+      <div class="page-heading"><div><p class="eyebrow">Team schedule</p><h1>Calendar</h1><p class="muted">Keep meetings, milestones, and deadlines visible to everyone.</p></div><button class="button button-primary" data-action="new-event">+ Add event</button></div>
+      <div class="calendar-layout"><article class="panel"><div class="calendar-header"><button id="previous-week" class="icon-button" aria-label="Previous week">←</button><h2 id="calendar-label"></h2><button id="next-week" class="icon-button" aria-label="Next week">→</button></div><div id="calendar-grid" class="calendar-grid"></div></article><aside class="panel"><div class="panel-heading"><div><p class="eyebrow">Selected day</p><h2>Schedule</h2></div></div><div id="calendar-events" class="event-list"></div></aside></div>
+    </main>
+  </div>
+  <dialog id="event-dialog"><form method="dialog" id="event-form"><div class="dialog-heading"><h2>Add calendar event</h2><button value="cancel" class="icon-button" aria-label="Close">×</button></div><label>Event title<input name="title" required placeholder="e.g. Team stand-up"></label><div class="form-grid"><label>Date<input name="date" type="date" required></label><label>Time<input name="time" type="time" value="09:00"></label></div><label>Owner<input name="owner" placeholder="Team member"></label><div class="dialog-actions"><button value="cancel" class="button button-ghost">Cancel</button><button value="default" class="button button-primary">Add event</button></div></form></dialog>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
