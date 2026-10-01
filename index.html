@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fall Cloud | Project Planner</title>
   <link rel="stylesheet" href="style.css">
-  <script src="pipeline.js"></script>
+  <script src="project-planner.js"></script>
 </head>
 <body>
   <header class="topbar">
@@ -47,6 +47,6 @@
   <dialog id="task-dialog"><form method="dialog" id="task-form"><div class="dialog-heading"><h2>New task</h2><button value="cancel" class="icon-button">×</button></div><label>Task title<input name="title" required placeholder="e.g. Review launch copy"></label><label>Description<textarea name="description" rows="3" placeholder="What needs to be done?"></textarea></label><div class="form-grid"><label>Assignee<input name="assignee" placeholder="Team member"></label><label>Due date<input name="dueDate" type="date"></label></div><label>Pipeline stage<select name="stageId" id="task-stage-options"></select></label><div class="dialog-actions"><button value="cancel" class="button button-ghost">Cancel</button><button value="default" class="button button-primary">Create task</button></div></form></dialog>
   <dialog id="event-dialog"><form method="dialog" id="event-form"><div class="dialog-heading"><h2>Add calendar event</h2><button value="cancel" class="icon-button">×</button></div><label>Event title<input name="title" required placeholder="e.g. Team stand-up"></label><div class="form-grid"><label>Date<input name="date" type="date" required></label><label>Time<input name="time" type="time" value="09:00"></label></div><label>Owner<input name="owner" placeholder="Team member"></label><div class="dialog-actions"><button value="cancel" class="button button-ghost">Cancel</button><button value="default" class="button button-primary">Add event</button></div></form></dialog>
   <dialog id="stage-dialog"><form method="dialog" id="stage-form"><div class="dialog-heading"><h2>Add pipeline stage</h2><button value="cancel" class="icon-button">×</button></div><label>Stage name<input name="name" required placeholder="e.g. Launch"></label><div class="dialog-actions"><button value="cancel" class="button button-ghost">Cancel</button><button value="default" class="button button-primary">Add stage</button></div></form></dialog>
-  <script src="pipeline.js"></script>
+  <script src="project-planner.js"></script>
 </body>
 </html>
