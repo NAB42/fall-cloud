@@ -5,12 +5,126 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fall Cloud | Tasks</title>
   <link rel="stylesheet" href="../style.css">
+
+  <!-- Firebase config -->
+  <script src="../config.js"></script>
+
+  <!-- Firestore logic modeled after your sample -->
+  <script type="module" defer>
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js";
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyC9VABK7qvayYE5ty1yhHgY8HVnvI-MpBY",
+      authDomain: "fall-cloud.firebaseapp.com",
+      projectId: "fall-cloud",
+      storageBucket: "fall-cloud.firebasestorage.app",
+      messagingSenderId: "482713243279",
+      appId: "1:482713243279:web:e0105d52a5250f7c36aafa",
+      measurementId: "G-WNJFL1T1Z0"
+    };
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // UI elements
+    const newTaskBtn = document.querySelector("[data-action='new-task']");
+    const dialog = document.getElementById("task-dialog");
+    const form = document.getElementById("task-form");
+    const taskColumns = document.getElementById("task-columns");
+    const taskCount = document.getElementById("task-count");
+
+    // Open dialog
+    newTaskBtn.addEventListener("click", () => dialog.showModal());
+
+    // Submit new task
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const data = new FormData(form);
+
+      const task = {
+        title: data.get("title"),
+        description: data.get("description"),
+        assignee: data.get("assignee"),
+        dueDate: data.get("dueDate"),
+        stageId: data.get("stageId") || "TO-DO",
+        createdAt: Date.now()
+      };
+
+      try {
+        await addDoc(collection(db, "tasks"), task);
+        dialog.close();
+        form.reset();
+        loadTasks();
+      } catch (err) {
+        console.error("Error adding task:", err);
+      }
+    });
+
+    // Load tasks
+    async function loadTasks() {
+      const snapshot = await getDocs(collection(db, "tasks"));
+      const tasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderTasks(tasks);
+    }
+
+    // Render tasks into columns
+    function renderTasks(tasks) {
+      taskColumns.innerHTML = "";
+
+      const stages = ["TO-DO", "IN-PROGRESS", "COMPLETE"];
+
+      stages.forEach(stage => {
+        const col = document.createElement("div");
+        col.className = "task-column";
+
+        col.innerHTML = `<h3>${stage.replace("-", " ")}</h3>`;
+
+        const list = document.createElement("div");
+        list.className = "task-list";
+
+        tasks
+          .filter(t => t.stageId === stage)
+          .forEach(t => {
+            const card = document.createElement("div");
+            card.className = "task-card";
+
+            card.innerHTML = `
+              <h4>${t.title}</h4>
+              <p>${t.description}</p>
+              <small>Due: ${t.dueDate || "None"}</small>
+              <small>Assignee: ${t.assignee || "Unassigned"}</small>
+            `;
+
+            list.appendChild(card);
+          });
+
+        col.appendChild(list);
+        taskColumns.appendChild(col);
+      });
+
+      taskCount.textContent = tasks.length;
+    }
+
+    // Initial load
+    loadTasks();
+  </script>
 </head>
+
 <body data-page="tasks">
   <header class="topbar">
     <div class="brand"><span class="brand-mark">F</span><span>Fall Cloud</span></div>
-    <div class="topbar-actions"><span id="save-status" class="save-status">Saved locally</span><button id="reset-data" class="button button-ghost">Reset demo data</button></div>
+    <div class="topbar-actions">
+      <span id="save-status" class="save-status">Synced to Firestore</span>
+    </div>
   </header>
+
   <div class="app-shell">
     <aside class="sidebar">
       <p class="eyebrow">Workspace</p>
@@ -22,15 +136,76 @@
         <a class="nav-link" href="../files/">▣ <span>File drop</span></a>
         <a class="nav-link" href="../whiteboard/">✎ <span>Whiteboard</span></a>
       </nav>
-      <div class="sidebar-footer"><span class="avatar">EM</span><div><strong>Team workspace</strong><small>Local demo mode</small></div></div>
+      <div class="sidebar-footer">
+        <span class="avatar">EM</span>
+        <div><strong>Team workspace</strong><small>Firestore mode</small></div>
+      </div>
     </aside>
+
     <main class="main-content">
-      <div class="page-heading"><div><p class="eyebrow">Work management</p><h1>Tasks</h1><p class="muted">Assign work, set deadlines, and move tasks through the workflow.</p></div><button class="button button-primary" data-action="new-task">+ New task</button></div>
-      <div class="toolbar"><label class="search-box">⌕ <input id="task-search" placeholder="Search tasks..." aria-label="Search tasks"></label><select id="task-filter" aria-label="Filter tasks"><option value="ALL">All statuses</option><option value="TO-DO">To-do</option><option value="IN-PROGRESS">In progress</option><option value="COMPLETE">Complete</option></select></div>
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">Work management</p>
+          <h1>Tasks</h1>
+          <p class="muted">Assign work, set deadlines, and move tasks through the workflow.</p>
+        </div>
+        <button class="button button-primary" data-action="new-task">+ New task</button>
+      </div>
+
+      <div class="toolbar">
+        <label class="search-box">⌕ 
+          <input id="task-search" placeholder="Search tasks..." aria-label="Search tasks">
+        </label>
+        <select id="task-filter" aria-label="Filter tasks">
+          <option value="ALL">All statuses</option>
+          <option value="TO-DO">To-do</option>
+          <option value="IN-PROGRESS">In progress</option>
+          <option value="COMPLETE">Complete</option>
+        </select>
+      </div>
+
       <div id="task-columns" class="task-columns"></div>
     </main>
   </div>
-  <dialog id="task-dialog"><form method="dialog" id="task-form"><div class="dialog-heading"><h2>New task</h2><button value="cancel" class="icon-button" aria-label="Close">×</button></div><label>Task title<input name="title" required placeholder="e.g. Review launch copy"></label><label>Description<textarea name="description" rows="3" placeholder="What needs to be done?"></textarea></label><div class="form-grid"><label>Assignee<input name="assignee" placeholder="Team member"></label><label>Due date<input name="dueDate" type="date"></label></div><label>Pipeline stage<select name="stageId" id="task-stage-options"></select></label><div class="dialog-actions"><button value="cancel" class="button button-ghost">Cancel</button><button value="default" class="button button-primary">Create task</button></div></form></dialog>
-  <script type="module" src="/app.js"></script>
+
+  <dialog id="task-dialog">
+    <form method="dialog" id="task-form">
+      <div class="dialog-heading">
+        <h2>New task</h2>
+        <button value="cancel" class="icon-button" aria-label="Close">×</button>
+      </div>
+
+      <label>Task title
+        <input name="title" required placeholder="e.g. Review launch copy">
+      </label>
+
+      <label>Description
+        <textarea name="description" rows="3" placeholder="What needs to be done?"></textarea>
+      </label>
+
+      <div class="form-grid">
+        <label>Assignee
+          <input name="assignee" placeholder="Team member">
+        </label>
+
+        <label>Due date
+          <input name="dueDate" type="date">
+        </label>
+      </div>
+
+      <label>Pipeline stage
+        <select name="stageId" id="task-stage-options">
+          <option value="TO-DO">To-do</option>
+          <option value="IN-PROGRESS">In progress</option>
+          <option value="COMPLETE">Complete</option>
+        </select>
+      </label>
+
+      <div class="dialog-actions">
+        <button value="cancel" class="button button-ghost">Cancel</button>
+        <button value="default" class="button button-primary">Create task</button>
+      </div>
+    </form>
+  </dialog>
 </body>
 </html>
