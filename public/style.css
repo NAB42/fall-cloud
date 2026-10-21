@@ -25,6 +25,32 @@ body {
   background: var(--bg);
 }
 
+html:not(.auth-ready) body[data-page] { visibility: hidden; }
+
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #f6f8fc 0%, #eef0ff 100%);
+}
+
+.login-card {
+  width: min(430px, 100%);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 38px;
+  box-shadow: 0 20px 60px #263e7814;
+}
+
+.login-brand { margin-bottom: 46px; }
+.login-card h1 { margin: 0 0 8px; font-size: 30px; letter-spacing: -0.04em; }
+.login-button { width: 100%; justify-content: center; gap: 10px; margin-top: 22px; }
+.google-g { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #fff; color: #4285f4; font-weight: 800; }
+.auth-message { min-height: 20px; margin: 14px 0 0; text-align: center; color: var(--muted); font-size: 13px; }
+.login-note { margin: 30px 0 0; color: var(--muted); font-size: 12px; text-align: center; }
+
 button,
 input,
 textarea,
