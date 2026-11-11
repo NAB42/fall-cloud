@@ -1,17 +1,20 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Whiteboard</title>
-    <link rel="stylesheet" href="whiteboard.css">
-    <script type="module" src="../auth.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fall Cloud | Whiteboard</title>
+  <link rel="stylesheet" href="../style.css">
+  <script type="module" src="../auth.js"></script>
 </head>
 <body data-page="whiteboard">
-    <h1>Shared Whiteboard</h1>
-
-    <textarea id="whiteboard" placeholder="Type here..."></textarea>
-
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="app.js"></script>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">F</span><span>Fall Cloud</span></div>
+    <div class="topbar-actions"><a class="text-button" href="/">Back to dashboard</a><span id="save-status" class="save-status">Shared whiteboard</span></div>
+  </header>
+  <main class="main-content whiteboard-page">
+    <div class="page-heading"><div><p class="eyebrow">Shared space</p><h1>Whiteboard</h1><p class="muted">Ideas and notes for the team.</p></div></div>
+    <iframe class="whiteboard-frame" src="whiteboard.html" title="Shared team whiteboard"></iframe>
+  </main>
 </body>
 </html>
