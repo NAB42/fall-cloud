@@ -215,6 +215,22 @@ button {
   margin-bottom: 30px;
 }
 
+.pagetop {
+  flex: 1;
+  padding: 22px 26px;
+  border-radius: 16px;
+  background: #5268dc;
+  color: #fff;
+}
+
+.pagetop .eyebrow {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.pagetop .muted {
+  color: rgba(255, 255, 255, 0.86);
+}
+
 .page-heading h1 {
   font-size: 30px;
   letter-spacing: -0.04em;
